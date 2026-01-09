@@ -11,7 +11,7 @@
 TtfFontList::TtfFontList(QWidget* parent) : QListWidget(parent)
 {
     setViewMode(QListView::IconMode);
-    setSelectionMode(QAbstractItemView::NoSelection);
+    setSelectionMode(QAbstractItemView::MultiSelection);
     setResizeMode(QListView::Adjust);
     setFlow(QListView::LeftToRight);
     setDragEnabled(false);
@@ -63,10 +63,18 @@ void TtfFontList::dropEvent(QDropEvent* event)
     }
 }
 
-TtfFontItem::TtfFontItem(QFont font, const quint32 unicode, const QString& name, QWidget* parent) : QFrame(parent),
-    _unicode(unicode),
-    _name(name)
+void TtfFontList::mouseDoubleClickEvent(QMouseEvent* event)
 {
+    clearSelection();
+}
+
+TtfFontItem::TtfFontItem(QFont font, const quint32 unicode, const QString& name, QWidget* parent) : QFrame(parent),
+                                                                                                    _unicode(unicode),
+                                                                                                    _name(name)
+{
+    setObjectName("TtfFontItem");
+    setProperty("selected", false);
+
     _lbIcon = new QLabel(this);
     font.setPointSize(48);
     _lbIcon->setFont(font);
@@ -76,7 +84,8 @@ TtfFontItem::TtfFontItem(QFont font, const quint32 unicode, const QString& name,
 
     _lbName = new QLabel(name, this);
     _lbName->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
-    _lbUnicode = new QLabel(QString("U+%1").arg(unicode, 4, 16, QLatin1Char('0')).toUpper(), this);
+    _lbName->setToolTip(name);
+    _lbUnicode = new QLabel(QString("U+%1").arg(getUnicodeString()));
     _lbUnicode->setAlignment(Qt::AlignCenter | Qt::AlignVCenter);
 
     auto lo = new QVBoxLayout(this);
@@ -86,7 +95,10 @@ TtfFontItem::TtfFontItem(QFont font, const quint32 unicode, const QString& name,
     lo->addWidget(_lbName);
     lo->addStretch();
     setStyleSheet(
-        "TtfFontItem {border-style: solid; border-width: 2px; border-color: gray; border-radius: 10px;} TtfFontItem:hover {border-color: #BBDEFB;}");
+        "TtfFontItem {border-style: solid; border-width: 2px; border-color: gray; border-radius: 10px;} "
+        "TtfFontItem:hover {border-color: #BBDEFB;} "
+        "TtfFontItem[selected=\"true\"] {border-color: #1E88E5;} "
+    );
 }
 
 TtfFontItem::~TtfFontItem()
@@ -98,11 +110,30 @@ QSize TtfFontItem::sizeHint() const
     return QSize(150, 150);
 }
 
+quint32 TtfFontItem::getUnicode() const
+{
+    return _unicode;
+}
+
+QString TtfFontItem::getName() const
+{
+    return _name;
+}
+
+QString TtfFontItem::getUnicodeString() const
+{
+    return QString("%1").arg(_unicode, 4, 16, QLatin1Char('0')).toUpper();
+}
+
 void TtfFontItem::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    const auto str = QString("%1").arg(_unicode, 4, 16, QLatin1Char('0')).toUpper();
+    const auto str = getUnicodeString();
     QApplication::clipboard()->setText(str);
     auto* msgBox = new QMessageBox(QMessageBox::Information, "Copied", QString("Copied: %1").arg(str));
-    QTimer::singleShot(500, msgBox, [msgBox]() { msgBox->accept(); });
+    QTimer::singleShot(500, msgBox, [msgBox]()
+    {
+        msgBox->accept();
+        msgBox->deleteLater();
+    });
     msgBox->exec();
 }

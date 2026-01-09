@@ -24,6 +24,9 @@ protected:
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent* event) override;
+
+private:
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 };
 
 class TtfFontItem : public QFrame
@@ -35,6 +38,9 @@ public:
     ~TtfFontItem() override;
 
     QSize sizeHint() const override;
+    quint32 getUnicode() const;
+    QString getName() const;
+    QString getUnicodeString() const;
 
 private:
     QLabel* _lbIcon;

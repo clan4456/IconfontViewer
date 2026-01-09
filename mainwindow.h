@@ -9,7 +9,7 @@
 #include <QMainWindow>
 #include <QTableWidget>
 #include <QPushButton>
-#include <QVBoxLayout>
+#include <QLineEdit>
 #include <QFileDialog>
 #include <QFile>
 #include <QMessageBox>
@@ -18,25 +18,36 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include "TtfFontItem.h"
+#include "ttfparser.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
 public slots:
     void onLoadFont();
-    void showFont(const QString &filePath);
+    void showFont(const QString& filePath);
+    void updateSelector() const;
+    void onSaveSvg();
+    void onSearch(const QString &text);
 
 private:
-    QLabel *_lbLogo{};
-    QLabel *_lbTitle{};
-    QPushButton *_btnTheme{};
-    QPushButton *_btnLoad{};
-    TtfFontList *_list{};
+    QLabel* _lbLogo{};
+    QLabel* _lbTitle{};
+    QPushButton* _btnTheme{};
+    QPushButton* _btnLoad{};
+    QPushButton* _btnSave{};
+    QLineEdit* _leSearch{};
+    TtfFontList* _list{};
+
+    QLabel* _lbSelector{};
+    QLabel* _lbStatus{};
+
+    cstk_ttf::TtfParser _ttfParser;
 
     QString _fontPath{};
 };
